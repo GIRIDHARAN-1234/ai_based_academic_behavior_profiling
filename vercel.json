@@ -1,12 +1,22 @@
 {
-  "routes": [
-    {
-      "src": "/api/(.*)",
-      "dest": "backend/$1"
+  "experimentalServices": {
+    "frontend": {
+      "entrypoint": "frontend",
+      "routes": [
+        {
+          "src": "/(.*)",
+          "dest": "/$1"
+        }
+      ]
     },
-    {
-      "src": "/(.*)",
-      "dest": "frontend/$1"
+    "backend": {
+      "entrypoint": "backend",
+      "routes": [
+        {
+          "src": "/api/(.*)",
+          "dest": "/$1"
+        }
+      ]
     }
-  ]
+  }
 }
