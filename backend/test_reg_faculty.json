@@ -1,0 +1,7 @@
+{
+    "name": "Faculty Test",
+    "email": "faculty2@academic.com",
+    "password": "password123",
+    "role": "faculty",
+    "department": "CS"
+}
