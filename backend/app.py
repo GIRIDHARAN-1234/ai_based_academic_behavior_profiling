@@ -28,12 +28,14 @@ import os
 
 # Extensions
 jwt = JWTManager(app)
-ALLOWED_ORIGINS = [
-    "http://localhost:5173",                    # Local dev
-    "http://localhost:3000",                    # Alt local dev
-    os.getenv("FRONTEND_URL", "").rstrip("/"),  # Vercel production URL (stripped slash)
-]
-CORS(app, origins=[o for o in ALLOWED_ORIGINS if o], supports_credentials=True)
+
+# CORS setup
+# We allow localhost for dev and any vercel.app domain for the user's deployment
+CORS(app, origins=[
+    "http://localhost:5173",
+    "http://localhost:3000",
+    r"https://.*\.vercel\.app"
+], supports_credentials=True)
 
 # MongoDB
 client = MongoClient(MONGO_URI)
