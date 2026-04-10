@@ -19,7 +19,7 @@ export default function Register() {
       navigate("/login");
     } catch (err) {
       if (!err.response) {
-        toast.error("Cannot connect to server. Please make sure the backend is running on port 5000.");
+        toast.error("Cannot connect to server. Please check your internet connection or if the backend is live.");
       } else if (err.response.status === 409) {
         toast.error("This email is already registered. Please login instead.");
       } else {

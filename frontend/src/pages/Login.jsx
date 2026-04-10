@@ -28,7 +28,7 @@ export default function Login() {
       else if (res.data.role === "faculty") navigate("/faculty");
     } catch (err) {
       if (!err.response) {
-        toast.error("Cannot reach server. Run start.bat to start the backend.");
+        toast.error("Cannot reach server. Please check your internet connection or if the backend is live.");
       } else if (err.response.status === 403) {
         toast.error("Account pending admin approval. Contact your admin.");
       } else {
