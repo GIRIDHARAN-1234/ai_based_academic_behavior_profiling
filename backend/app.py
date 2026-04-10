@@ -25,6 +25,7 @@ app.config["JWT_SECRET_KEY"] = JWT_SECRET_KEY
 app.config["JWT_ACCESS_TOKEN_EXPIRES"] = False  # Tokens don't expire for dev
 
 import os
+import re
 
 # Extensions
 jwt = JWTManager(app)
@@ -34,7 +35,7 @@ jwt = JWTManager(app)
 CORS(app, origins=[
     "http://localhost:5173",
     "http://localhost:3000",
-    r"https://.*\.vercel\.app"
+    re.compile(r"^https://.*\.vercel\.app$")
 ], supports_credentials=True)
 
 # MongoDB
