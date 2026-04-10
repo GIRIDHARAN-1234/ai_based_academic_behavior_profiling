@@ -55,6 +55,15 @@ app.register_blueprint(faculty_bp, url_prefix="/api/faculty")
 app.register_blueprint(admin_bp, url_prefix="/api/admin")
 app.register_blueprint(predict_bp, url_prefix="/api")
 
+@app.route("/")
+def index():
+    return {
+        "title": "Academic Behavior Profiling API",
+        "status": "online",
+        "version": "1.0.0",
+        "documentation": "/api/health"
+    }
+
 @app.route("/api/health")
 def health():
     return {"status": "ok", "message": "Academic Behavior Profiling API is running"}
