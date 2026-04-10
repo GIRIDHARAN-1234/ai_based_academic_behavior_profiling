@@ -41,7 +41,10 @@ CORS(app, origins=[
 
 # MongoDB
 client = MongoClient(MONGO_URI)
-db = client.get_default_database()
+try:
+    db = client.get_default_database()
+except Exception:
+    db = client.get_database("academic_behavior_db")
 
 # Make db accessible from routes
 app.db = db
