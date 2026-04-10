@@ -24,9 +24,16 @@ app = Flask(__name__)
 app.config["JWT_SECRET_KEY"] = JWT_SECRET_KEY
 app.config["JWT_ACCESS_TOKEN_EXPIRES"] = False  # Tokens don't expire for dev
 
+import os
+
 # Extensions
 jwt = JWTManager(app)
-CORS(app, origins="*", supports_credentials=True)
+ALLOWED_ORIGINS = [
+    "http://localhost:5173",                    # Local dev
+    "http://localhost:3000",                    # Alt local dev
+    os.getenv("FRONTEND_URL", ""),              # Vercel production URL (set in Render env vars)
+]
+CORS(app, origins=[o for o in ALLOWED_ORIGINS if o], supports_credentials=True)
 
 # MongoDB
 client = MongoClient(MONGO_URI)
