@@ -35,7 +35,8 @@ jwt = JWTManager(app)
 CORS(app, origins=[
     "http://localhost:5173",
     "http://localhost:3000",
-    re.compile(r"^https://.*\.vercel\.app$")
+    re.compile(r"^https://.*\.vercel\.app$"),
+    re.compile(r"^https://.*\.onrender\.com$")
 ], supports_credentials=True)
 
 # MongoDB
