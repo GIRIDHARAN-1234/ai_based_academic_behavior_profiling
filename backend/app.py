@@ -53,8 +53,16 @@ def health():
     return {"status": "ok", "message": "Academic Behavior Profiling API is running"}
 
 if __name__ == "__main__":
-    # Create indexes
-    db.users.create_index("email", unique=True)
-    print("[OK] Connected to MongoDB")
+    # Create indexes and verify MongoDB connectivity
+    try:
+        db.users.create_index("email", unique=True)
+        print("[OK] Connected to MongoDB")
+    except Exception as error:
+        print(f"[ERROR] Unable to connect to MongoDB at {MONGO_URI}")
+        print("[ERROR] Make sure MongoDB is running on localhost:27017 or update MONGO_URI in backend/.env")
+        print(f"[ERROR] {error}")
+        import sys
+        sys.exit(1)
+
     print(f"[INFO] Server starting on port {PORT}")
     app.run(debug=DEBUG, port=PORT)
