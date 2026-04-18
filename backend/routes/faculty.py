@@ -26,18 +26,21 @@ def get_avg_test_score(db, student_id):
     return round(weighted_sum / total_weight, 2)
 
 def build_student_analytics(db, s):
-    """Build analytics dict for one student using ALL past scores."""
+    """Build analytics dict for one student."""
     sid = str(s["_id"])
     avg_score = get_avg_test_score(db, sid)
     last_result = db.results.find_one({"student_id": sid}, sort=[("submitted_at", -1)])
     last_score = last_result["score"] if last_result else 0
     tests_taken = db.results.count_documents({"student_id": sid})
 
+    internal = s.get("internal_marks", 0)
+    exam     = s.get("exam_marks", 0)
+    avg_marks = round((internal + exam) / 2, 1)
+
     behavior = predict_behavior(
         attendance=s.get("attendance", 0),
-        internal_marks=s.get("internal_marks", 0),
-        exam_marks=s.get("exam_marks", 0),
-        test_score=avg_score
+        internal_marks=internal,
+        exam_marks=exam
     )
     return {
         "_id": sid,
@@ -45,8 +48,9 @@ def build_student_analytics(db, s):
         "email": s["email"],
         "department": s.get("department", ""),
         "attendance": s.get("attendance", 0),
-        "internal_marks": s.get("internal_marks", 0),
-        "exam_marks": s.get("exam_marks", 0),
+        "internal_marks": internal,
+        "exam_marks": exam,
+        "avg_score": avg_marks,
         "last_test_score": last_score,
         "avg_test_score": avg_score,
         "tests_taken": tests_taken,
@@ -203,15 +207,13 @@ def assign_test(test_id):
     for email in emails:
         student = db.users.find_one({"email": email, "role": "student"})
         if student:
-            avg_score = get_avg_test_score(db, str(student["_id"]))
             behavior = predict_behavior(
                 attendance=student.get("attendance", 0),
                 internal_marks=student.get("internal_marks", 0),
-                exam_marks=student.get("exam_marks", 0),
-                test_score=avg_score
+                exam_marks=student.get("exam_marks", 0)
             )
             update_fields = {"predicted_behavior": behavior}
-            if behavior == "Weak":
+            if behavior == "At Risk":
                 update_fields["early_warning"] = True
             db.users.update_one({"email": email}, {"$set": update_fields})
 
@@ -227,7 +229,7 @@ def get_analytics():
     students = list(db.users.find({"role": "student", "status": "active"}))
 
     analytics = []
-    behavior_counts = {"Weak": 0, "Medium": 0, "Excellent": 0}
+    behavior_counts = {"Excellent": 0, "Good": 0, "Average": 0, "Below Average": 0, "At Risk": 0}
     warnings = []
 
     for s in students:
@@ -235,7 +237,7 @@ def get_analytics():
         analytics.append(entry)
         b = entry["predicted_behavior"]
         behavior_counts[b] = behavior_counts.get(b, 0) + 1
-        if b == "Weak":
+        if b == "At Risk":
             warnings.append({"name": s["name"], "email": s["email"]})
 
     return jsonify({

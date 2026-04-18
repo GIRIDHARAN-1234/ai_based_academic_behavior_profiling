@@ -66,31 +66,42 @@ def get_analytics():
 
     # Behavior distribution using WEIGHTED avg scores
     students = list(db.users.find({"role": "student", "status": "active"}))
-    behavior_counts = {"Weak": 0, "Medium": 0, "Excellent": 0}
+    behavior_counts = {"Excellent": 0, "Good": 0, "Average": 0, "Below Average": 0, "At Risk": 0}
     student_behaviors = []
 
+    at_risk_count = 0
     for s in students:
         sid = str(s["_id"])
-        avg_score = get_weighted_avg(db, sid)
+        avg_score = round((s.get("internal_marks", 0) + s.get("exam_marks", 0)) / 2, 1)
         behavior = predict_behavior(
             attendance=s.get("attendance", 0),
             internal_marks=s.get("internal_marks", 0),
-            exam_marks=s.get("exam_marks", 0),
-            test_score=avg_score
+            exam_marks=s.get("exam_marks", 0)
         )
         behavior_counts[behavior] = behavior_counts.get(behavior, 0) + 1
         tests_taken = db.results.count_documents({"student_id": sid})
+
+        # At-risk: behavior is "At Risk" OR attendance below 75%
+        attendance_val = s.get("attendance", 0)
+        is_at_risk = behavior == "At Risk" or attendance_val < 75
+        if is_at_risk:
+            at_risk_count += 1
+
         student_behaviors.append({
             "name": s["name"],
             "email": s["email"],
             "department": s.get("department", ""),
             "predicted_behavior": behavior,
-            "attendance": s.get("attendance", 0),
+            "attendance": attendance_val,
             "internal_marks": s.get("internal_marks", 0),
             "exam_marks": s.get("exam_marks", 0),
-            "avg_test_score": avg_score,
-            "tests_taken": tests_taken
+            "avg_score": avg_score,
+            "avg_test_score": get_weighted_avg(db, sid),
+            "tests_taken": tests_taken,
+            "at_risk": is_at_risk
         })
+
+    at_risk_pct = round((at_risk_count / total_students * 100), 1) if total_students > 0 else 0
 
     # Faculty with their test counts
     faculty_list = list(db.users.find({"role": "faculty"}))
@@ -112,7 +123,9 @@ def get_analytics():
             "faculty": total_faculty,
             "pending_faculty": pending_faculty,
             "tests": total_tests,
-            "submissions": total_results
+            "submissions": total_results,
+            "at_risk_count": at_risk_count,
+            "at_risk_percentage": at_risk_pct
         },
         "behavior_distribution": behavior_counts,
         "student_behaviors": student_behaviors,

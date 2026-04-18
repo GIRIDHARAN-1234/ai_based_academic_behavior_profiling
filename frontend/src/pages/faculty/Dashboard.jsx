@@ -7,7 +7,13 @@ import toast from "react-hot-toast";
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, ArcElement, Tooltip, Legend);
 
-const behaviorColors = { Excellent: "#10b981", Medium: "#f59e0b", Weak: "#ef4444" };
+const behaviorColors = {
+  Excellent:       "#059669",
+  Good:            "#2563eb",
+  Average:         "#d97706",
+  "Below Average": "#ea580c",
+  "At Risk":       "#dc2626",
+};
 
 export default function FacultyDashboard() {
   const [data, setData] = useState(null);
@@ -31,12 +37,16 @@ export default function FacultyDashboard() {
       data: studentList.slice(0,10).map(s => s.avg_test_score || s.last_test_score || 0),
       backgroundColor: studentList.slice(0,10).map(s => {
         const b = s.predicted_behavior;
-        return b === "Excellent" ? "rgba(16,185,129,0.7)" : b === "Weak" ? "rgba(239,68,68,0.7)" : "rgba(245,158,11,0.7)";
+        return behaviorColors[b] ? behaviorColors[b] + "b3" : "rgba(99,102,241,0.7)";
       }),
       borderRadius: 6
     }]
   };
-  const donutData = { labels: ["Excellent","Medium","Weak"], datasets: [{ data: [dist.Excellent||0, dist.Medium||0, dist.Weak||0], backgroundColor:["#10b981","#f59e0b","#ef4444"], borderWidth:0 }] };
+  const donutData = {
+    labels: ["Excellent","Good","Average","Below Average","At Risk"],
+    datasets: [{ data: [dist.Excellent||0, dist.Good||0, dist.Average||0, dist["Below Average"]||0, dist["At Risk"]||0],
+      backgroundColor:["#059669","#2563eb","#d97706","#ea580c","#dc2626"], borderWidth:0 }]
+  };
 
   return (
     <div className="page-content">

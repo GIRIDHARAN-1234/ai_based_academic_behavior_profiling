@@ -32,15 +32,12 @@ def get_weighted_avg_score(db, student_id):
     return round(weighted_sum / total_weight, 2), all_results
 
 def compute_behavior(db, user, student_id=None):
-    """Predict behavior using student's academic data + weighted historical test scores."""
-    sid = student_id or str(user["_id"])
-    avg_score, _ = get_weighted_avg_score(db, sid)
+    """Predict behavior using (internal_marks + exam_marks) / 2."""
     return predict_behavior(
         attendance=user.get("attendance", 0),
         internal_marks=user.get("internal_marks", 0),
-        exam_marks=user.get("exam_marks", 0),
-        test_score=avg_score
-    ), avg_score
+        exam_marks=user.get("exam_marks", 0)
+    )
 
 # ─── PROFILE ─────────────────────────────────────────────────────────────────
 
@@ -122,29 +119,32 @@ def submit_test(test_id):
     }
     db.results.insert_one(result_doc)
 
-    # ── Predict using WEIGHTED AVERAGE of ALL past scores (including this new one) ──
+    # ── Predict using (internal + exam) / 2 ──
     user = db.users.find_one({"_id": ObjectId(uid)})
-    behavior, avg_score = compute_behavior(db, user, uid)
+    behavior = compute_behavior(db, user, uid)
+    avg_marks = round((user.get("internal_marks", 0) + user.get("exam_marks", 0)) / 2, 1)
 
     db.users.update_one({"_id": ObjectId(uid)}, {
         "$set": {
             "predicted_behavior": behavior,
             "last_test_score": score,
-            "avg_test_score": avg_score,
-            "early_warning": behavior == "Weak"
+            "avg_test_score": avg_marks,
+            "early_warning": behavior == "At Risk"
         }
     })
 
     tips = {
-        "Weak":      "Your faculty has been notified. Focus on attendance and regular revision.",
-        "Medium":    "Good effort! Push harder on weak subjects to reach Excellent.",
-        "Excellent": "Outstanding! Keep maintaining your performance."
+        "Excellent":     "🌟 Outstanding performance! Keep it up.",
+        "Good":          "👍 Good work! A little more effort will get you to Excellent.",
+        "Average":       "📈 You're doing okay. Focus on weak subjects to improve.",
+        "Below Average": "⚠️ Below average. Attend classes and revise regularly.",
+        "At Risk":       "🚨 Your faculty has been notified. Urgent improvement needed."
     }
     return jsonify({
         "score": score,
         "correct": correct,
         "total": len(questions),
-        "avg_score": avg_score,
+        "avg_score": avg_marks,
         "behavior": behavior,
         "insight": tips.get(behavior, "")
     })
@@ -171,18 +171,21 @@ def get_prediction():
     uid = get_jwt_identity()
     user = db.users.find_one({"_id": ObjectId(uid)})
 
-    behavior, avg_score = compute_behavior(db, user, uid)
+    behavior = compute_behavior(db, user, uid)
     _, all_results = get_weighted_avg_score(db, uid)
     tests_taken = len(all_results)
+    avg_marks = round((user.get("internal_marks", 0) + user.get("exam_marks", 0)) / 2, 1)
 
     db.users.update_one({"_id": ObjectId(uid)}, {
-        "$set": {"predicted_behavior": behavior, "avg_test_score": avg_score}
+        "$set": {"predicted_behavior": behavior, "avg_test_score": avg_marks}
     })
 
     tips = {
-        "Weak":      "⚠️ You need improvement. Attend classes regularly, revise internal topics, and practice tests.",
-        "Medium":    "📈 You're performing averagely. Push harder on weak subjects and target above 75% attendance.",
-        "Excellent": "🌟 Outstanding performance! Keep it up and help peers around you."
+        "Excellent":     "🌟 Outstanding performance! Keep it up and help peers around you.",
+        "Good":          "👍 Good work! Push a bit harder to reach Excellent.",
+        "Average":       "📈 You're doing okay. Target above 70 in both internal & exam marks.",
+        "Below Average": "⚠️ Below average. Attend classes regularly and revise internal topics.",
+        "At Risk":       "🚨 You need urgent improvement. Your faculty has been notified."
     }
     return jsonify({
         "behavior": behavior,
@@ -192,7 +195,7 @@ def get_prediction():
             "attendance": user.get("attendance", 0),
             "internal_marks": user.get("internal_marks", 0),
             "exam_marks": user.get("exam_marks", 0),
-            "avg_test_score": avg_score,
+            "avg_score": avg_marks,
             "last_test_score": user.get("last_test_score", 0)
         }
     })

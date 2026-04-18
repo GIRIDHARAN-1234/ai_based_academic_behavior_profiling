@@ -25,8 +25,9 @@ export default function AdminAnalytics() {
 
   const dist = data?.behavior_distribution || {};
   const donutData = {
-    labels: ["Excellent", "Medium", "Weak"],
-    datasets: [{ data: [dist.Excellent||0, dist.Medium||0, dist.Weak||0], backgroundColor: ["#10b981","#f59e0b","#ef4444"], borderWidth: 0 }]
+    labels: ["Excellent", "Good", "Average", "Below Average", "At Risk"],
+    datasets: [{ data: [dist.Excellent||0, dist.Good||0, dist.Average||0, dist["Below Average"]||0, dist["At Risk"]||0],
+      backgroundColor: ["#059669","#2563eb","#d97706","#ea580c","#dc2626"], borderWidth: 0 }]
   };
 
   // Department-wise counts (derived from student list)
@@ -68,8 +69,14 @@ export default function AdminAnalytics() {
   };
 
   const behaviorBadge = (b) => {
-    const map = { Excellent:{bg:"#dcfce7",color:"#10b981"}, Medium:{bg:"#fef3c7",color:"#f59e0b"}, Weak:{bg:"#fee2e2",color:"#ef4444"} };
-    const s = map[b] || map.Medium;
+    const map = {
+      Excellent:       { bg:"#d1fae5", color:"#059669" },
+      Good:            { bg:"#dbeafe", color:"#2563eb" },
+      Average:         { bg:"#fef3c7", color:"#d97706" },
+      "Below Average": { bg:"#ffe4cc", color:"#ea580c" },
+      "At Risk":       { bg:"#fee2e2", color:"#dc2626" },
+    };
+    const s = map[b] || map.Average;
     return <span className="behavior-chip" style={{background:s.bg,color:s.color}}>{b}</span>;
   };
 
@@ -95,9 +102,11 @@ export default function AdminAnalytics() {
             <Doughnut data={donutData} options={{responsive:true, cutout:"68%", plugins:{legend:{position:"bottom"}}}}/>
           </div>
           <div className="dist-summary">
-            <div className="dist-item" style={{borderColor:"#10b981"}}><span>Excellent</span><strong>{dist.Excellent||0}</strong></div>
-            <div className="dist-item" style={{borderColor:"#f59e0b"}}><span>Medium</span><strong>{dist.Medium||0}</strong></div>
-            <div className="dist-item" style={{borderColor:"#ef4444"}}><span>Weak</span><strong>{dist.Weak||0}</strong></div>
+            <div className="dist-item" style={{borderColor:"#059669"}}><span>Excellent</span><strong>{dist.Excellent||0}</strong></div>
+            <div className="dist-item" style={{borderColor:"#2563eb"}}><span>Good</span><strong>{dist.Good||0}</strong></div>
+            <div className="dist-item" style={{borderColor:"#d97706"}}><span>Average</span><strong>{dist.Average||0}</strong></div>
+            <div className="dist-item" style={{borderColor:"#ea580c"}}><span>Below Average</span><strong>{dist["Below Average"]||0}</strong></div>
+            <div className="dist-item" style={{borderColor:"#dc2626"}}><span>At Risk</span><strong>{dist["At Risk"]||0}</strong></div>
           </div>
         </div>
 
@@ -118,7 +127,7 @@ export default function AdminAnalytics() {
       <div className="card">
         <h3>🎓 Student Behavior Details</h3>
         <table className="data-table">
-          <thead><tr><th>#</th><th>Name</th><th>Email</th><th>Department</th><th>Attendance%</th><th>Predicted Behavior</th></tr></thead>
+          <thead><tr><th>#</th><th>Name</th><th>Email</th><th>Department</th><th>Attendance%</th><th>Internal</th><th>Exam</th><th>Predicted Behavior</th></tr></thead>
           <tbody>
             {students.length === 0
               ? <tr><td colSpan={6} style={{textAlign:"center",padding:24,color:"#9ca3af"}}>No students registered yet</td></tr>
@@ -129,6 +138,8 @@ export default function AdminAnalytics() {
                   <td className="muted">{s.email}</td>
                   <td>{s.department||"—"}</td>
                   <td>{s.attendance}%</td>
+                  <td>{s.internal_marks ?? "—"}</td>
+                  <td>{s.exam_marks ?? "—"}</td>
                   <td>{behaviorBadge(s.predicted_behavior)}</td>
                 </tr>
               ))

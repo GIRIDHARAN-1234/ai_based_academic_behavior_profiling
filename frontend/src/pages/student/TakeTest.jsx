@@ -50,7 +50,7 @@ export default function TakeTest() {
 
   if (submitted && result) {
     const pct = result.score;
-    const behaviorColors = { Excellent: "#10b981", Medium: "#f59e0b", Weak: "#ef4444" };
+    const behaviorColors = { Excellent:"#059669", Good:"#2563eb", Average:"#d97706", "Below Average":"#ea580c", "At Risk":"#dc2626" };
     const bColor = behaviorColors[result.behavior] || "#6366f1";
     return (
       <div className="page-content">

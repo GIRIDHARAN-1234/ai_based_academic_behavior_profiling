@@ -4,8 +4,14 @@ import toast from "react-hot-toast";
 import { Users, Search } from "lucide-react";
 
 const behaviorBadge = (b) => {
-  const map = { Excellent:{ bg:"#dcfce7",color:"#10b981" }, Medium:{ bg:"#fef3c7",color:"#f59e0b" }, Weak:{ bg:"#fee2e2",color:"#ef4444" } };
-  const s = map[b] || map.Medium;
+  const map = {
+    Excellent:       { bg:"#d1fae5", color:"#059669" },
+    Good:            { bg:"#dbeafe", color:"#2563eb" },
+    Average:         { bg:"#fef3c7", color:"#d97706" },
+    "Below Average": { bg:"#ffe4cc", color:"#ea580c" },
+    "At Risk":       { bg:"#fee2e2", color:"#dc2626" },
+  };
+  const s = map[b] || map.Average;
   return <span className="behavior-chip" style={{background:s.bg,color:s.color}}>{b}</span>;
 };
 

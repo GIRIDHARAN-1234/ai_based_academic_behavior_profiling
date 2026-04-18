@@ -4,9 +4,11 @@ import toast from "react-hot-toast";
 import { Search, AlertTriangle, TrendingUp } from "lucide-react";
 
 const behaviorStyle = {
-  Excellent: { background:"#d1fae5", color:"#10b981" },
-  Medium:    { background:"#fef3c7", color:"#f59e0b" },
-  Weak:      { background:"#fee2e2", color:"#ef4444" }
+  Excellent:       { background:"#d1fae5", color:"#059669" },
+  Good:            { background:"#dbeafe", color:"#2563eb" },
+  Average:         { background:"#fef3c7", color:"#d97706" },
+  "Below Average": { background:"#ffe4cc", color:"#ea580c" },
+  "At Risk":       { background:"#fee2e2", color:"#dc2626" },
 };
 
 export default function FacultyAnalytics() {
@@ -41,23 +43,26 @@ export default function FacultyAnalytics() {
         <p>AI behavior predictions based on weighted average of all past test scores + academic data</p>
       </div>
 
-      {/* Summary Strip */}
       <div className="stats-grid">
         <div className="stat-card">
-          <div className="stat-icon" style={{background:"#dcfce7"}}><TrendingUp color="#10b981"/></div>
-          <div><p className="stat-label">Excellent</p><p className="stat-value" style={{color:"#10b981"}}>{dist.Excellent||0}</p></div>
+          <div className="stat-icon" style={{background:"#d1fae5"}}><TrendingUp color="#059669"/></div>
+          <div><p className="stat-label">Excellent</p><p className="stat-value" style={{color:"#059669"}}>{dist.Excellent||0}</p></div>
+        </div>
+        <div className="stat-card">
+          <div className="stat-icon" style={{background:"#dbeafe"}}><span style={{fontSize:20}}>👍</span></div>
+          <div><p className="stat-label">Good</p><p className="stat-value" style={{color:"#2563eb"}}>{dist.Good||0}</p></div>
         </div>
         <div className="stat-card">
           <div className="stat-icon" style={{background:"#fef3c7"}}><span style={{fontSize:20}}>📊</span></div>
-          <div><p className="stat-label">Medium</p><p className="stat-value" style={{color:"#f59e0b"}}>{dist.Medium||0}</p></div>
+          <div><p className="stat-label">Average</p><p className="stat-value" style={{color:"#d97706"}}>{dist.Average||0}</p></div>
         </div>
         <div className="stat-card">
-          <div className="stat-icon" style={{background:"#fee2e2"}}><AlertTriangle color="#ef4444"/></div>
-          <div><p className="stat-label">Weak / At-Risk</p><p className="stat-value" style={{color:"#ef4444"}}>{dist.Weak||0}</p></div>
+          <div className="stat-icon" style={{background:"#ffe4cc"}}><span style={{fontSize:20}}>📉</span></div>
+          <div><p className="stat-label">Below Average</p><p className="stat-value" style={{color:"#ea580c"}}>{dist["Below Average"]||0}</p></div>
         </div>
         <div className="stat-card">
-          <div className="stat-icon" style={{background:"#e0e7ff"}}><span style={{fontSize:20}}>📝</span></div>
-          <div><p className="stat-label">Tests Created</p><p className="stat-value">{data?.total_tests||0}</p></div>
+          <div className="stat-icon" style={{background:"#fee2e2"}}><AlertTriangle color="#dc2626"/></div>
+          <div><p className="stat-label">At Risk</p><p className="stat-value" style={{color:"#dc2626"}}>{dist["At Risk"]||0}</p></div>
         </div>
       </div>
 
@@ -71,7 +76,7 @@ export default function FacultyAnalytics() {
                 <span className="warning-dot"/>
                 <strong>{w.name}</strong>
                 <span className="muted">{w.email}</span>
-                <span className="muted" style={{marginLeft:"auto"}}>⚠️ Predicted: Weak</span>
+                <span className="muted" style={{marginLeft:"auto"}}>🚨 Predicted: At Risk</span>
               </div>
             ))}
           </div>
@@ -87,7 +92,7 @@ export default function FacultyAnalytics() {
               placeholder="Search student..." value={search} onChange={e=>setSearch(e.target.value)} />
           </div>
           <div className="filter-tabs">
-            {["All","Excellent","Medium","Weak"].map(f => (
+            {["All","Excellent","Good","Average","Below Average","At Risk"].map(f => (
               <button key={f} className={`filter-tab ${filter===f?"active":""}`} onClick={()=>setFilter(f)}>{f}</button>
             ))}
           </div>

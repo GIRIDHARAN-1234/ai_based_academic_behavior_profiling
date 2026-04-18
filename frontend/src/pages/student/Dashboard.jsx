@@ -9,9 +9,11 @@ import toast from "react-hot-toast";
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Tooltip, Legend, Filler);
 
 const behaviorConfig = {
-  Excellent: { color: "#10b981", bg: "#d1fae5", icon: "🌟", label: "Excellent" },
-  Medium:    { color: "#f59e0b", bg: "#fef3c7", icon: "📈", label: "Medium" },
-  Weak:      { color: "#ef4444", bg: "#fee2e2", icon: "⚠️", label: "Weak" },
+  Excellent:       { color: "#059669", bg: "#d1fae5", icon: "🌟", label: "Excellent" },
+  Good:            { color: "#2563eb", bg: "#dbeafe", icon: "👍", label: "Good" },
+  Average:         { color: "#d97706", bg: "#fef3c7", icon: "📈", label: "Average" },
+  "Below Average": { color: "#ea580c", bg: "#ffe4cc", icon: "⚠️", label: "Below Average" },
+  "At Risk":       { color: "#dc2626", bg: "#fee2e2", icon: "🚨", label: "At Risk" },
 };
 
 export default function StudentDashboard() {
@@ -35,7 +37,7 @@ export default function StudentDashboard() {
 
   if (loading) return <div className="loading"><div className="spinner" /></div>;
 
-  const bConfig = prediction ? behaviorConfig[prediction.behavior] || behaviorConfig.Medium : behaviorConfig.Medium;
+  const bConfig = prediction ? behaviorConfig[prediction.behavior] || behaviorConfig.Average : behaviorConfig.Average;
 
   const trendChart = {
     labels: trend.map(t => t.date),
@@ -91,7 +93,7 @@ export default function StudentDashboard() {
               </div>
             ))}
           </div>
-          {prediction?.behavior === "Weak" && (
+          {prediction?.behavior === "At Risk" && (
             <div className="early-warning">
               <AlertTriangle size={16} color="#ef4444" /> Early Warning: Your faculty has been notified!
             </div>
